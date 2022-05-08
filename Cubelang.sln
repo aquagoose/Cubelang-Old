@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cubelang", "Cubelang\Cubelang.csproj", "{32C5CDD4-893C-41C2-8BCE-D406ACDEA584}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cubelang.Desktop", "Cubelang.Desktop\Cubelang.Desktop.csproj", "{5AD39FF9-8D82-440C-9EB7-594BC0222118}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cubelang.Runtime", "Cubelang.Runtime\Cubelang.Runtime.csproj", "{5EAFC17A-4D81-4964-85DE-FD4A67914375}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{32C5CDD4-893C-41C2-8BCE-D406ACDEA584}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32C5CDD4-893C-41C2-8BCE-D406ACDEA584}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32C5CDD4-893C-41C2-8BCE-D406ACDEA584}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32C5CDD4-893C-41C2-8BCE-D406ACDEA584}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AD39FF9-8D82-440C-9EB7-594BC0222118}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AD39FF9-8D82-440C-9EB7-594BC0222118}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AD39FF9-8D82-440C-9EB7-594BC0222118}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AD39FF9-8D82-440C-9EB7-594BC0222118}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EAFC17A-4D81-4964-85DE-FD4A67914375}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EAFC17A-4D81-4964-85DE-FD4A67914375}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EAFC17A-4D81-4964-85DE-FD4A67914375}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EAFC17A-4D81-4964-85DE-FD4A67914375}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

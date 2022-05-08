@@ -689,7 +689,7 @@ public abstract partial class CubelangBase
                     {
                         // If the bracket level is 0, recursively run the ParseString method to parse whatever was
                         // inside it.
-                        finalStr += ParseString(varCache);
+                        finalStr += toStr(ParseString(varCache));
                         varCache = "";
                     }
                     else

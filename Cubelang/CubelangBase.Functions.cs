@@ -19,11 +19,6 @@ public abstract partial class CubelangBase
         return text.ToLower();
     }
 
-    public string test(string bc)
-    {
-        return "my name sus";
-    }
-
     public string toStr(object value)
     {
         string finalObj = value.ToString();

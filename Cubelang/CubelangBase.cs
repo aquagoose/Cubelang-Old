@@ -95,6 +95,12 @@ public abstract partial class CubelangBase
                             dict = (Dictionary<string, object>) dict[(string) ParseString(indexers[i])];
                         }
                         
+                        if (parsedString == null)
+                        {
+                            dict.Remove((string) ParseString(indexers[^1]));
+                            continue;
+                        }
+
                         if (!dict.TryAdd((string) ParseString(indexers[^1]), parsedString))
                             dict[(string) ParseString(indexers[^1])] = parsedString;
                     }
@@ -410,7 +416,7 @@ public abstract partial class CubelangBase
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw new Exception($"Error at line {l + 1}: {e.Message}");
+                throw new Exception($"Error at line {l + 1}: {(e is TargetInvocationException ? e.InnerException.Message : e.Message)}");
             }
         }
     }
@@ -519,6 +525,8 @@ public abstract partial class CubelangBase
                 {
                     for (int i = 0; i < pInfo.Length; i++)
                     {
+                        if (parameters[i] == null)
+                            continue;
                         if (pInfo[i].ParameterType != parameters[i].GetType())
                         {
                             if (pInfo[i].ParameterType != typeof(object))
@@ -531,8 +539,6 @@ public abstract partial class CubelangBase
                 
                 NEXTITEM: ;
             }
-            
-            OOPS: ;
 
             // No method with the right parameters were found!
             string msg;

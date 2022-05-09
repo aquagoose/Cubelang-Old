@@ -159,9 +159,14 @@ public abstract partial class CubelangBase
     
     public int len(ObjectDict dict) => dict.Count;
 
+    public bool contains(ObjectDict dict, string key)
+    {
+        return dict.ContainsKey(key);
+    }
+
     #endregion
 
-    public int randI32(int low, int high)
+    public int rand(int low, int high)
     {
         return _random.Next(low, high);
     }
@@ -186,11 +191,13 @@ public abstract partial class CubelangBase
         {
             if (value is string s)
                 return ulong.Parse(s);
+            else if (value is long l)
+                return (ulong) l;
             return (ulong) value;
         }
         catch (Exception)
         {
-            throw new Exception("Given value cannot be parsed as i32.");
+            throw new Exception("Given value cannot be parsed as u64.");
         }
     }
     
@@ -227,7 +234,9 @@ public abstract partial class CubelangBase
         return JsonConvert.SerializeObject(dict, Formatting.Indented);
     }
 
-    public ObjectDict json_parse(string json)
+    public ObjectDict json_parse(string json) => ParseJson(json);
+    
+    public static ObjectDict ParseJson(string json)
     {
         ObjectDict dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
         
@@ -247,7 +256,7 @@ public abstract partial class CubelangBase
         return dict;
     }
 
-    private ObjectDict Deserialize(JObject jObject)
+    private static ObjectDict Deserialize(JObject jObject)
     {
         ObjectDict dict = jObject.ToObject<ObjectDict>();
         for (int i = 0; i < dict.Count; i++)
@@ -266,7 +275,7 @@ public abstract partial class CubelangBase
         return dict;
     }
 
-    private List<object> Deserialize(JArray array)
+    private static List<object> Deserialize(JArray array)
     {
         List<object> list = array.ToObject<List<object>>();
         for (int i = 0; i < list.Count; i++)

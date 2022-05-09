@@ -58,7 +58,7 @@ public abstract partial class CubelangBase
                     {
                         List<string> indexers = new List<string>();
                         string indexer = "";
-                        bool isInIndexer = false;
+                        int indexerLevel = 0;
                         for (int chr = 0; chr < splitLine[0].Length; chr++)
                         {
                             char c = splitLine[0][chr];
@@ -66,15 +66,23 @@ public abstract partial class CubelangBase
                             switch (c)
                             {
                                 case '[':
-                                    isInIndexer = true;
+                                    if (indexerLevel > 0)
+                                        indexer += c;
+                                    indexerLevel++;
                                     break;
                                 case ']':
-                                    isInIndexer = false;
+                                    indexerLevel--;
+                                    if (indexerLevel > 0)
+                                    {
+                                        indexer += c;
+                                        continue;
+                                    }
+
                                     indexers.Add(indexer);
                                     indexer = "";
                                     break;
                                 default:
-                                    if (isInIndexer)
+                                    if (indexerLevel != 0)
                                         indexer += c;
                                     break;
                             }
@@ -282,24 +290,11 @@ public abstract partial class CubelangBase
                                     conditionType = ConditionType.Negate;
                                     break;
                                 }
-                                if (strParams[i - 1] == "is")
-                                    break;
                                 break;
                             case "gthan":
-                                if (strParams[i - 1] is "is" or "not")
-                                    break;
-                                break;
                             case "lthan":
-                                if (strParams[i - 1] is "is" or "not")
-                                    break;
-                                break;
                             case "gequal":
-                                if (strParams[i - 1] is "is" or "not")
-                                    break;
-                                break;
                             case "lequal":
-                                if (strParams[i - 1] is "is" or "not")
-                                    break;
                                 break;
                             default:
                                 parameters.Add(ParseString(strParams[i]));
@@ -320,11 +315,11 @@ public abstract partial class CubelangBase
                                 _condition = true;
                             break;
                         case ConditionType.EqualTo:
-                            if (parameters[0].GetType() == parameters[1].GetType() && toStr(parameters[0]) == toStr(parameters[1]))
+                            if (parameters[0].GetType() == parameters[1].GetType() && str(parameters[0]) == str(parameters[1]))
                                 _condition = true;
                             break;
                         case ConditionType.NotEqualTo:
-                            if (parameters[0].GetType() == parameters[1].GetType() && toStr(parameters[0]) != toStr(parameters[1]))
+                            if (parameters[0].GetType() == parameters[1].GetType() && str(parameters[0]) != str(parameters[1]))
                                 _condition = true;
                             break;
                         case ConditionType.GreaterThan:
@@ -414,6 +409,7 @@ public abstract partial class CubelangBase
             // Send exception to command line.
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 throw new Exception($"Error at line {l + 1}: {e.Message}");
             }
         }
@@ -502,10 +498,14 @@ public abstract partial class CubelangBase
             foreach (string param in stringParams)
                 parameters.Add(ParseString(param));
 
+            bool found = false;
+            
             foreach (MethodInfo info in _methodInfos)
             {
                 if (info.Name != functionName)
                     continue;
+
+                found = true;
                 
                 // For now something can either have an object array or parameters, no inbetweens.
                 ParameterInfo[] pInfo = info.GetParameters();
@@ -535,12 +535,26 @@ public abstract partial class CubelangBase
             OOPS: ;
 
             // No method with the right parameters were found!
-            string msg =
-                $"Incorrect parameters supplied for function \"{functionName}\". The following function(s) with the given name are available:\n";
+            string msg;
+            if (found)
+                msg =
+                    $"Incorrect parameters supplied for function \"{functionName}\". The following function(s) with the given name are available:\n";
+            else
+                msg = $"Could not find a function with name \"{functionName}\".";
+
+            bool similarFound = false;
             foreach (MethodInfo info in _methodInfos)
             {
-                if (info.Name != functionName)
+                if (found && info.Name != functionName)
                     continue;
+                else if (!functionName.ToLower().Contains(info.Name.ToLower()))
+                    continue;
+
+                if (!found && !similarFound)
+                {
+                    similarFound = true;
+                    msg += " However, function(s) with similar name(s) were found:\n";
+                }
                 
                 ParameterInfo[] parameterInfos = info.GetParameters();
                 msg += $"\t{info.Name}(";
@@ -689,7 +703,7 @@ public abstract partial class CubelangBase
                     {
                         // If the bracket level is 0, recursively run the ParseString method to parse whatever was
                         // inside it.
-                        finalStr += toStr(ParseString(varCache));
+                        finalStr += str(ParseString(varCache));
                         varCache = "";
                     }
                     else

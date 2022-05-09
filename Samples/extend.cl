@@ -1,5 +1,5 @@
 msg is prompt("Enter a message: ")
-spaces is toI32(prompt("How many spaces? "))
+spaces is i32(prompt("How many spaces? "))
 
 # Our final message
 finalMsg is ""

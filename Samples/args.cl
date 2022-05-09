@@ -17,4 +17,4 @@ if lower(addArgs) is "y"
     endrep
 endif
 
-log("Your final argument list is: {toString(args)}")
+log("Your final argument list is: {str(args)}")

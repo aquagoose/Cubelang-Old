@@ -241,8 +241,11 @@ public abstract partial class CubelangBase
                     
                     if (cacheStr.Trim().Length > 0)
                         strParams.Add(cacheStr.Trim());
-
+                    
                     ConditionType conditionType = ConditionType.Boolean;
+
+                    List<(object, object, ConditionType)> conditions = new List<(object, object, ConditionType)>();
+                    List<SeparatorType> separatorTypes = new List<SeparatorType>();
                     
                     for (int i = 0; i < strParams.Count; i++)
                     {
@@ -302,48 +305,68 @@ public abstract partial class CubelangBase
                             case "gequal":
                             case "lequal":
                                 break;
+                            case "or":
+                                conditions.Add((parameters[0], parameters[1], conditionType));
+                                parameters.Clear();
+                                separatorTypes.Add(SeparatorType.Or);
+                                conditionType = ConditionType.Boolean;
+                                break;
                             default:
                                 parameters.Add(ParseString(strParams[i]));
                                 break;
                         }
                     }
+                    
+                    conditions.Add((parameters[0], parameters[1], conditionType));
+                    
+                    Console.WriteLine(string.Join(", ", conditions));
 
                     _condition = false;
-                    
-                    switch (conditionType)
+
+                    foreach ((object, object, ConditionType) condition in conditions)
                     {
-                        case ConditionType.Boolean:
-                            if (parameters[0] is bool && (bool) parameters[0])
-                                _condition = true;
-                            break;
-                        case ConditionType.Negate:
-                            if (parameters[0] is bool && !(bool) parameters[0])
-                                _condition = true;
-                            break;
-                        case ConditionType.EqualTo:
-                            if (parameters[0].GetType() == parameters[1].GetType() && str(parameters[0]) == str(parameters[1]))
-                                _condition = true;
-                            break;
-                        case ConditionType.NotEqualTo:
-                            if (parameters[0].GetType() == parameters[1].GetType() && str(parameters[0]) != str(parameters[1]))
-                                _condition = true;
-                            break;
-                        case ConditionType.GreaterThan:
-                            if (parameters[0].GetType() == parameters[1].GetType() && (int) parameters[0] > (int) parameters[1])
-                                _condition = true;
-                            break;
-                        case ConditionType.LessThan:
-                            if (parameters[0].GetType() == parameters[1].GetType() && (int) parameters[0] < (int) parameters[1])
-                                _condition = true;
-                            break;
-                        case ConditionType.GreaterEqual:
-                            if (parameters[0].GetType() == parameters[1].GetType() && (int) parameters[0] >= (int) parameters[1])
-                                _condition = true;
-                            break;
-                        case ConditionType.LessEqual:
-                            if (parameters[0].GetType() == parameters[1].GetType() && (int) parameters[0] <= (int) parameters[1])
-                                _condition = true;
-                            break;
+                        bool isMet = false;
+                        switch (condition.Item3)
+                        {
+                            case ConditionType.Boolean:
+                                if (condition.Item1 is bool && (bool) condition.Item1)
+                                    isMet = true;
+                                break;
+                            case ConditionType.Negate:
+                                if (condition.Item1 is bool && !(bool) condition.Item1)
+                                    isMet = true;
+                                break;
+                            case ConditionType.EqualTo:
+                                if (condition.Item1.GetType() == condition.Item2.GetType() &&
+                                    str(condition.Item1) == str(condition.Item2))
+                                    isMet = true;
+                                break;
+                            case ConditionType.NotEqualTo:
+                                if (condition.Item1.GetType() == condition.Item2.GetType() &&
+                                    str(condition.Item1) != str(condition.Item2))
+                                    isMet = true;
+                                break;
+                            case ConditionType.GreaterThan:
+                                if (condition.Item1.GetType() == condition.Item2.GetType() &&
+                                    (int) condition.Item1 > (int) condition.Item2)
+                                    isMet = true;
+                                break;
+                            case ConditionType.LessThan:
+                                if (condition.Item1.GetType() == condition.Item2.GetType() &&
+                                    (int) condition.Item1 < (int) condition.Item2)
+                                    isMet = true;
+                                break;
+                            case ConditionType.GreaterEqual:
+                                if (condition.Item1.GetType() == condition.Item2.GetType() &&
+                                    (int) condition.Item1 >= (int) condition.Item2)
+                                    isMet = true;
+                                break;
+                            case ConditionType.LessEqual:
+                                if (condition.Item1.GetType() == condition.Item2.GetType() &&
+                                    (int) condition.Item1 <= (int) condition.Item2)
+                                    isMet = true;
+                                break;
+                        }
                     }
 
                     if (!_condition)

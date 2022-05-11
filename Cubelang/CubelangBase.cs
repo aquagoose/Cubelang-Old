@@ -306,9 +306,15 @@ public abstract partial class CubelangBase
                             case "lequal":
                                 break;
                             case "or":
-                                conditions.Add((parameters[0], parameters[1], conditionType));
+                                conditions.Add((parameters[0], parameters.Count == 2 ? parameters[1] : null, conditionType));
                                 parameters.Clear();
                                 separatorTypes.Add(SeparatorType.Or);
+                                conditionType = ConditionType.Boolean;
+                                break;
+                            case "and":
+                                conditions.Add((parameters[0], parameters.Count == 2 ? parameters[1] : null, conditionType));
+                                parameters.Clear();
+                                separatorTypes.Add(SeparatorType.And);
                                 conditionType = ConditionType.Boolean;
                                 break;
                             default:
@@ -317,14 +323,14 @@ public abstract partial class CubelangBase
                         }
                     }
                     
-                    conditions.Add((parameters[0], parameters[1], conditionType));
-                    
-                    Console.WriteLine(string.Join(", ", conditions));
+                    conditions.Add((parameters[0], parameters.Count == 2 ? parameters[1] : null, conditionType));
 
                     _condition = false;
 
-                    foreach ((object, object, ConditionType) condition in conditions)
+                    for (int i = 0; i < conditions.Count; i++)
                     {
+                        (object, object, ConditionType) condition = conditions[i];
+                        
                         bool isMet = false;
                         switch (condition.Item3)
                         {
@@ -367,7 +373,32 @@ public abstract partial class CubelangBase
                                     isMet = true;
                                 break;
                         }
+
+                        if (i == 0)
+                            _condition = isMet;
+                        else
+                        {
+                            switch (separatorTypes[i - 1])
+                            {
+                                case SeparatorType.Or:
+                                    if (_condition)
+                                        goto SKIPLOOP;
+                                    _condition |= isMet;
+                                    if (_condition)
+                                        goto SKIPLOOP;
+                                    break;
+                                case SeparatorType.And:
+                                    if (!_condition)
+                                        goto SKIPLOOP;
+                                    _condition &= isMet;
+                                    if (!_condition)
+                                        goto SKIPLOOP;
+                                    break;
+                            }
+                        }
                     }
+                    
+                    SKIPLOOP: ;
 
                     if (!_condition)
                     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Cubelang;
 using Cubelang.Desktop;
 
 CubelangDesktop desktop = new CubelangDesktop();
@@ -12,7 +13,7 @@ if (args.Length > 0)
 }
 else
 {
-    Console.WriteLine("Cubelang runtime - Ollie Robinson 2022");
+    Console.WriteLine($"Cubelang runtime - Ollie Robinson 2022\nVersion {CubelangBase.Version}\nPress Ctrl+C to exit.");
     bool executeNow = true;
     List<string> lineCache = new List<string>();
     while (true)

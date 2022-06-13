@@ -6,6 +6,8 @@ namespace Cubelang;
 
 public abstract partial class CubelangBase
 {
+    public const string Version = "1.0.0-alpha";
+    
     protected readonly Dictionary<string, object> Variables;
     protected readonly Dictionary<string, int> Labels;
     private int _forLoopCount;
@@ -460,11 +462,11 @@ public abstract partial class CubelangBase
                         IncrementLoops();
                     }
                 }
-                else if (splitLine[0] == "stop")
+                else if (splitLine[0] == "exit")
                     break;
                 // Otherwise, we check to see if the line is a function.
                 else if (!ParseFunction(splitLines[l]).success)
-                    throw new Exception($"Syntax error: {splitLines[l]}");
+                    throw new Exception($"Syntax error: '{splitLines[l]}'");
             }
             // Send exception to command line.
             catch (Exception e)
@@ -640,76 +642,82 @@ public abstract partial class CubelangBase
     // variables and functions into a full string that can be read by any functions that need it.
     private object ParseString(string param)
     {
-        if (param == "none")
-            return null;
-        // Parse numbers if possible.
-        if (int.TryParse(param, out int intParam))
-            return intParam;
-        if (ulong.TryParse(param, out ulong ulongParam))
-            return ulongParam;
-        if (double.TryParse(param, out double doubleParam))
-            return doubleParam;
-
-        if (bool.TryParse(param, out bool boolParam))
-            return boolParam;
-
-        // Parse variables if possible.
-        List<string> indexers = new List<string>();
-        string varName = "";
-        string indexer = "";
-        bool isInIndexer = false;
-        for (int chr = 0; chr < param.Length; chr++)
+        if (!(param.StartsWith('"') && param.EndsWith('"')))
         {
-            char c = param[chr];
+            if (param == "none")
+                return null;
+            // Parse numbers if possible.
+            if (int.TryParse(param, out int intParam))
+                return intParam;
+            if (ulong.TryParse(param, out ulong ulongParam))
+                return ulongParam;
+            if (double.TryParse(param, out double doubleParam))
+                return doubleParam;
 
-            switch (c)
-            {
-                case '[':
-                    isInIndexer = true;
-                    break;
-                case ']':
-                    isInIndexer = false;
-                    indexers.Add(indexer);
-                    indexer = "";
-                    break;
-                default:
-                    if (isInIndexer)
-                        indexer += c;
-                    else
-                        varName += c;
-                    break;
-            }
-        }
+            if (bool.TryParse(param, out bool boolParam))
+                return boolParam;
 
-        if (Variables.TryGetValue(varName, out object val))
-        {
-            if (indexers.Count == 0)
-                return val;
-            else
+            // Parse variables if possible.
+            List<string> indexers = new List<string>();
+            string varName = "";
+            string indexer = "";
+            bool isInIndexer = false;
+            for (int chr = 0; chr < param.Length; chr++)
             {
-                if (val.GetType() == typeof(List<object>))
+                char c = param[chr];
+
+                switch (c)
                 {
-                    if (indexers.Count > 1)
-                        throw new Exception("Invalid indexer");
-                    int value = (int) ParseString(indexers[0]);
-                    return ((List<object>) val)[value == -1 ? ^1 : value];
+                    case '[':
+                        isInIndexer = true;
+                        break;
+                    case ']':
+                        isInIndexer = false;
+                        indexers.Add(indexer);
+                        indexer = "";
+                        break;
+                    default:
+                        if (isInIndexer)
+                            indexer += c;
+                        else
+                            varName += c;
+                        break;
                 }
-                else if (val.GetType() == typeof(Dictionary<string, object>))
+            }
+
+            if (Variables.TryGetValue(varName, out object val))
+            {
+                if (indexers.Count == 0)
+                    return val;
+                else
                 {
-                    Dictionary<string, object> dict = (Dictionary<string, object>) Variables[varName];
-                    for (int i = 0; i < indexers.Count - 1; i++)
+                    if (val.GetType() == typeof(List<object>))
                     {
-                        dict = (Dictionary<string, object>) dict[(string) ParseString(indexers[i])];
+                        if (indexers.Count > 1)
+                            throw new Exception("Invalid indexer");
+                        int value = (int) ParseString(indexers[0]);
+                        return ((List<object>) val)[value == -1 ? ^1 : value];
                     }
-                    return dict[(string) ParseString(indexers[^1])];
+                    else if (val.GetType() == typeof(Dictionary<string, object>))
+                    {
+                        Dictionary<string, object> dict = (Dictionary<string, object>) Variables[varName];
+                        for (int i = 0; i < indexers.Count - 1; i++)
+                        {
+                            dict = (Dictionary<string, object>) dict[(string) ParseString(indexers[i])];
+                        }
+
+                        return dict[(string) ParseString(indexers[^1])];
+                    }
                 }
             }
+
+            // Parse functions if possible.
+            (object result, bool success) = ParseFunction(param);
+            if (success)
+                return result;
+
+            throw new Exception($"'{param}' is undefined.");
         }
-        
-        // Parse functions if possible.
-        (object result, bool success) = ParseFunction(param);
-        if (success)
-            return result;
 
         bool isInString = false;
         string varCache = "";
@@ -774,7 +782,7 @@ public abstract partial class CubelangBase
                 default:
                     if (bracketLevel > 0)
                         varCache += c;
-                    else
+                    else if (isInString)
                         finalStr += c;
                     break;
             }
